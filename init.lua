@@ -1,11 +1,8 @@
--- Set <space> as the leader key
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
--- Set to true if you have a Nerd Font
-vim.g.have_nerd_font = true -- Set this to false if you don't have a Nerd Font
+vim.g.have_nerd_font = true
 
--- [[ Setting options ]]
 vim.opt.number = true
 vim.opt.mouse = "a"
 vim.opt.showmode = false
@@ -28,25 +25,21 @@ vim.opt.cursorline = true
 vim.opt.scrolloff = 10
 vim.opt.confirm = true
 
--- [[ Basic Keymaps ]]
 vim.keymap.set("n", "<Esc>", "<cmd>nohlsearch<CR>")
-vim.keymap.set("n", "<leader>q", vim.diagnostic.setloclist, { desc = "Open diagnostic [Q]uickfix list" })
-vim.keymap.set("t", "<Esc><Esc>", "<C-\\><C-n>", { desc = "Exit terminal mode" })
-vim.keymap.set("n", "<C-h>", "<C-w><C-h>", { desc = "Move focus to the left window" })
-vim.keymap.set("n", "<C-l>", "<C-w><C-l>", { desc = "Move focus to the right window" })
-vim.keymap.set("n", "<C-j>", "<C-w><C-j>", { desc = "Move focus to the lower window" })
-vim.keymap.set("n", "<C-k>", "<C-w><C-k>", { desc = "Move focus to the upper window" })
+vim.keymap.set("n", "<leader>q", vim.diagnostic.setloclist)
+vim.keymap.set("t", "<Esc><Esc>", "<C-\\><C-n>")
+vim.keymap.set("n", "<C-h>", "<C-w><C-h>")
+vim.keymap.set("n", "<C-l>", "<C-w><C-l>")
+vim.keymap.set("n", "<C-j>", "<C-w><C-j>")
+vim.keymap.set("n", "<C-k>", "<C-w><C-k>")
 
--- [[ Basic Autocommands ]]
 vim.api.nvim_create_autocmd("TextYankPost", {
-	desc = "Highlight when yanking (copying) text",
 	group = vim.api.nvim_create_augroup("kickstart-highlight-yank", { clear = true }),
 	callback = function()
 		vim.highlight.on_yank()
 	end,
 })
 
--- [[ Install `lazy.nvim` plugin manager ]]
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not (vim.uv or vim.loop).fs_stat(lazypath) then
 	local lazyrepo = "https://github.com/folke/lazy.nvim.git"
@@ -57,11 +50,10 @@ if not (vim.uv or vim.loop).fs_stat(lazypath) then
 end ---@diagnostic disable-next-line: undefined-field
 vim.opt.rtp:prepend(lazypath)
 
--- [[ Configure and install plugins ]]
 require("lazy").setup({
-	"tpope/vim-sleuth", -- Detect tabstop and shiftwidth automatically
+	"tpope/vim-sleuth",
 
-	{ -- Adds git related signs to the gutter
+	{
 		"lewis6991/gitsigns.nvim",
 		opts = {
 			signs = {
@@ -74,7 +66,7 @@ require("lazy").setup({
 		},
 	},
 	{ "tpope/vim-fugitive" },
-	{ -- Useful plugin to show you pending keybinds.
+	{
 		"folke/which-key.nvim",
 		event = "VimEnter",
 		opts = {
@@ -124,7 +116,7 @@ require("lazy").setup({
 		},
 	},
 
-	{ -- Fuzzy Finder
+	{
 		"nvim-telescope/telescope.nvim",
 		event = "VimEnter",
 		branch = "0.1.x",
@@ -143,7 +135,7 @@ require("lazy").setup({
 		config = function()
 			require("telescope").setup({
 				defaults = {
-					hidden = true, -- Also search hidden files by default
+					hidden = true,
 					file_ignore_patterns = {
 						"node_modules",
 						".git",
@@ -152,17 +144,13 @@ require("lazy").setup({
 						"coverage",
 						"%.lock",
 						"%.sqlite3",
-						"/vendor/", -- Add vendor directories if needed
-						"/tmp/", -- Add temporary directories
+						"/vendor/",
+						"/tmp/",
 					},
 				},
 				pickers = {
-					find_files = {
-						-- Override default file ignore patterns for this picker if needed
-					},
-					live_grep = {
-						-- Override default file ignore patterns for this picker if needed
-					},
+					find_files = {},
+					live_grep = {},
 				},
 				extensions = {
 					["ui-select"] = {
@@ -204,9 +192,8 @@ require("lazy").setup({
 				builtin.find_files({ cwd = vim.fn.stdpath("config") })
 			end, { desc = "[S]earch [N]eovim files" })
 
-			-- Keybinding to search files in a specific directory (e.g., '~/projects')
 			vim.keymap.set("n", "<leader>sp", function()
-				builtin.find_files({ cwd = "~/projects" }) -- Replace '~/projects' with your desired directory
+				builtin.find_files({ cwd = "~/projects" })
 			end, { desc = "[S]earch [P]rojects files" })
 		end,
 	},
@@ -221,7 +208,6 @@ require("lazy").setup({
 		},
 	},
 	{
-		-- Main LSP Configuration
 		"neovim/nvim-lspconfig",
 		dependencies = {
 			{ "williamboman/mason.nvim", opts = {} },
@@ -304,7 +290,6 @@ require("lazy").setup({
 				end,
 			})
 
-			-- Diagnostic Config
 			vim.diagnostic.config({
 				severity_sort = true,
 				float = { border = "rounded", source = "if_many" },
@@ -342,17 +327,23 @@ require("lazy").setup({
 							completion = {
 								callSnippet = "Replace",
 							},
-							-- diagnostics = { disable = { 'missing-fields' } },
 						},
 					},
 				},
+				clangd = {},
+				pyright = {},
+				["typescript-language-server"] = {},
+				html = {},
+				cssls = {},
+				jsonls = {},
 			}
 
-			local ensure_installed = vim.tbl_keys(servers or {})
-			vim.list_extend(ensure_installed, {
-				"stylua", -- Used to format Lua code
+			local ensure_installed_tools = vim.tbl_keys(servers or {})
+			vim.list_extend(ensure_installed_tools, {
+				"stylua",
+				"prettier",
 			})
-			require("mason-tool-installer").setup({ ensure_installed = ensure_installed })
+			require("mason-tool-installer").setup({ ensure_installed = ensure_installed_tools })
 
 			require("mason-lspconfig").setup({
 				ensure_installed = {},
@@ -368,10 +359,9 @@ require("lazy").setup({
 		end,
 	},
 
-	-- Autoformat
 	{
 		"stevearc/conform.nvim",
-		event = { "BufWritePre" }, -- Trigger formatting before saving a buffer
+		event = { "BufWritePre" },
 		cmd = { "ConformInfo" },
 		keys = {
 			{
@@ -379,37 +369,28 @@ require("lazy").setup({
 				function()
 					require("conform").format({ async = true, lsp_format = "fallback" })
 				end,
-				mode = "", -- Can be used in any mode where formatting is relevant (normal, visual, insert)
+				mode = "",
 				desc = "[F]ormat buffer",
 			},
 		},
 		opts = {
-			-- Define your options here.
-			notify_on_error = false, -- Don't show notifications on formatting errors
+			notify_on_error = false,
 			format_on_save = function(bufnr)
-				-- Disable "format_on_save lsp_fallback" for languages that don't
-				-- have a well standardized coding style. You can add additional
-				-- languages here or re-enable it for the disabled ones.
-				local disable_filetypes = { c = true, cpp = true } -- Add filetypes to disable auto-formatting on save
+				local disable_filetypes = { c = true, cpp = true }
 				if disable_filetypes[vim.bo[bufnr].filetype] then
 					return nil
 				else
-					-- Enable LSP formatting as a fallback, but prioritize explicit formatters
 					return {
-						timeout_ms = 500, -- Timeout for the formatter command
-						lsp_format = "fallback", -- Use LSP formatter if no explicit formatter is found
+						timeout_ms = 500,
+						lsp_format = "fallback",
 					}
 				end
 			end,
-			-- Configure formatters per file type
 			formatters_by_ft = {
-				lua = { "stylua" }, -- Example: use stylua for Lua files
-
-				-- Add Prettier for the file types you want to format with it
+				lua = { "stylua" },
 				javascript = { "prettier" },
 				typescript = { "prettier" },
 				javascriptreact = { "prettier" },
-				typescriptreact = { "prettier" },
 				css = { "prettier" },
 				scss = { "prettier" },
 				less = { "prettier" },
@@ -418,16 +399,13 @@ require("lazy").setup({
 				yaml = { "prettier" },
 				markdown = { "prettier" },
 				graphql = { "prettier" },
-
-				-- You can configure multiple formatters for a single filetype.
-				-- Conform will try them in order. You can use 'stop_after_first = true'
-				-- to stop after the first successful formatter.
-				-- python = { "isort", "black" },
+				python = { "isort", "black" },
+				cpp = { "clang-format" },
 			},
 		},
 	},
 
-	{ -- Autocompletion
+	{
 		"hrsh7th/nvim-cmp",
 		event = "InsertEnter",
 		dependencies = {
@@ -444,6 +422,8 @@ require("lazy").setup({
 			"hrsh7th/cmp-nvim-lsp",
 			"hrsh7th/cmp-path",
 			"hrsh7th/cmp-nvim-lsp-signature-help",
+			"hrsh7th/nvim-cmp",
+			"hrsh7th/cmp-buffer",
 		},
 		config = function()
 			local cmp = require("cmp")
@@ -462,7 +442,7 @@ require("lazy").setup({
 					["<C-p>"] = cmp.mapping.select_prev_item(),
 					["<C-b>"] = cmp.mapping.scroll_docs(-4),
 					["<C-f>"] = cmp.mapping.scroll_docs(4),
-					["<C-y>"] = cmp.mapping.confirm({ select = true }),
+					["<Tab>"] = cmp.mapping.confirm({ select = true }),
 					["<C-Space>"] = cmp.mapping.complete({}),
 					["<C-l>"] = cmp.mapping(function()
 						if luasnip.expand_or_locally_jumpable() then
@@ -475,21 +455,24 @@ require("lazy").setup({
 						end
 					end, { "i", "s" }),
 				}),
-				sources = {
-					{
-						name = "lazydev",
-						group_index = 0,
-					},
+				sources = cmp.config.sources({
+					{ name = "buffer" },
 					{ name = "nvim_lsp" },
 					{ name = "luasnip" },
 					{ name = "path" },
 					{ name = "nvim_lsp_signature_help" },
-				},
+				}),
 			})
 		end,
 	},
 
-	{ -- Colorscheme
+	{
+		"echasnovski/mini.pairs",
+		event = "InsertCharPre",
+		opts = {},
+	},
+
+	{
 		"folke/tokyonight.nvim",
 		priority = 1000,
 		config = function()
@@ -503,14 +486,14 @@ require("lazy").setup({
 		end,
 	},
 
-	{ -- Highlight todo, notes, etc in comments
+	{
 		"folke/todo-comments.nvim",
 		event = "VimEnter",
 		dependencies = { "nvim-lua/plenary.nvim" },
 		opts = { signs = false },
 	},
 
-	{ -- Collection of various small independent plugins/modules
+	{
 		"echasnovski/mini.nvim",
 		config = function()
 			require("mini.ai").setup({ n_lines = 500 })
@@ -523,7 +506,7 @@ require("lazy").setup({
 			end
 		end,
 	},
-	{ -- Highlight, edit, and navigate code
+	{
 		"nvim-treesitter/nvim-treesitter",
 		build = ":TSUpdate",
 		main = "nvim-treesitter.configs",
@@ -540,6 +523,13 @@ require("lazy").setup({
 				"query",
 				"vim",
 				"vimdoc",
+				"javascript",
+				"typescript",
+				"css",
+				"json",
+				"yaml",
+				"cpp",
+				"python",
 			},
 			auto_install = true,
 			highlight = {
@@ -549,9 +539,6 @@ require("lazy").setup({
 			indent = { enable = true, disable = { "ruby" } },
 		},
 	},
-
-	-- Add your own plugins here or in lua/custom/plugins/*.lua
-	-- { import = 'custom.plugins' },
 }, {
 	ui = {
 		icons = vim.g.have_nerd_font and {} or {
@@ -572,7 +559,6 @@ require("lazy").setup({
 	},
 })
 
--- Neo-tree keymap
-vim.keymap.set("n", "<leader>e", "<cmd>Neotree toggle<CR>", { desc = "Toggle file explorer" })
+vim.keymap.set("n", "<leader>e", "<cmd>Neotree toggle<CR>")
 
 -- vim: ts=2 sts=2 sw=2 et
